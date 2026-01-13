@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymTracker</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        gym: {
+                            dark: '#1a1a1a',
+                            card: '#252525',
+                            accent: '#3b82f6',
+                            success: '#22c55e',
+                            danger: '#ef4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e5e5e5;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-gym-dark fade-in">
+        <div class="bg-gym-card p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-800">
+            <div class="text-center mb-8">
+                <i class="fa-solid fa-dumbbell text-4xl text-gym-accent mb-4"></i>
+                <h1 class="text-2xl font-bold text-white">GymTracker Login</h1>
+                <p class="text-gray-400 text-sm mt-2">Track your daily gains</p>
+            </div>
+
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Username</label>
+                    <input type="text" id="username"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gym-accent transition"
+                        placeholder="Enter username">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Password</label>
+                    <input type="password" id="password"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gym-accent transition"
+                        placeholder="Enter password">
+                </div>
+
+                <div class="flex items-center">
+                    <input id="remember-me" type="checkbox"
+                        class="w-4 h-4 rounded bg-gray-800 border-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900">
+                    <label for="remember-me"
+                        class="ml-2 text-sm font-medium text-gray-400 cursor-pointer select-none">Keep me logged
+                        in</label>
+                </div>
+
+                <div id="login-error" class="text-red-500 text-sm hidden text-center">Invalid credentials</div>
+                <button type="submit"
+                    class="w-full bg-gym-accent hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 transform hover:scale-[1.02]">
+                    Login
+                </button>
+            </form>
+            <div class="mt-6 text-xs text-center text-gray-500">
+                <p>Default: gymbro / gains123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP SCREEN (Hidden by default) -->
+    <div id="app-screen" class="hidden flex-1 flex flex-col max-w-5xl mx-auto w-full p-4 fade-in">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6 py-4 border-b border-gray-800">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-dumbbell text-2xl text-gym-accent"></i>
+                <h1 class="text-xl font-bold text-white">GymTracker</h1>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="exportData()"
+                    class="text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg transition"
+                    title="Backup Data">
+                    <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Backup</span>
+                </button>
+                <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(this)">
+                <button onclick="document.getElementById('import-file').click()"
+                    class="text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg transition"
+                    title="Restore Data">
+                    <i class="fa-solid fa-upload"></i> <span class="hidden sm:inline">Restore</span>
+                </button>
+                <button onclick="logout()"
+                    class="text-sm bg-red-500/10 hover:bg-red-500/20 text-red-500 px-3 py-2 rounded-lg transition">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Calendar Controls -->
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="changeMonth(-1)"
+                class="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition">
+                <i class="fa-solid fa-chevron-left text-xl"></i>
+            </button>
+            <h2 id="current-month-year" class="text-2xl font-bold text-white"></h2>
+            <button onclick="changeMonth(1)"
+                class="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition">
+                <i class="fa-solid fa-chevron-right text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="bg-gym-card rounded-xl shadow-lg p-4 sm:p-6 border border-gray-800">
+            <!-- Days of Week -->
+            <div class="grid grid-cols-7 gap-2 mb-2 text-center">
+                <div class="text-gray-500 text-sm font-semibold">Sun</div>
+                <div class="text-gray-500 text-sm font-semibold">Mon</div>
+                <div class="text-gray-500 text-sm font-semibold">Tue</div>
+                <div class="text-gray-500 text-sm font-semibold">Wed</div>
+                <div class="text-gray-500 text-sm font-semibold">Thu</div>
+                <div class="text-gray-500 text-sm font-semibold">Fri</div>
+                <div class="text-gray-500 text-sm font-semibold">Sat</div>
+            </div>
+            <!-- Days Container -->
+            <div id="calendar-grid" class="grid grid-cols-7 gap-2 auto-rows-fr">
+                <!-- Javascript will populate this -->
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-2 gap-4 mt-6">
+            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-800 text-center">
+                <div class="text-gym-success text-2xl font-bold" id="attended-count">0</div>
+                <div class="text-gray-400 text-sm">Days Attended</div>
+            </div>
+            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-800 text-center">
+                <div class="text-gym-danger text-2xl font-bold" id="skipped-count">0</div>
+                <div class="text-gray-400 text-sm">Days Skipped</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ENTRY MODAL -->
+    <div id="entry-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden fade-in">
+        <div class="bg-gym-card w-full max-w-lg mx-4 rounded-xl shadow-2xl border border-gray-700 overflow-hidden">
+            <div class="bg-gray-800 px-6 py-4 flex justify-between items-center border-b border-gray-700">
+                <h3 id="modal-date-title" class="text-lg font-bold text-white">Edit Date</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white transition">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <form id="entry-form">
+                    <input type="hidden" id="selected-date">
+
+                    <!-- Checkbox -->
+                    <div class="mb-6">
+                        <label class="flex items-center space-x-3 cursor-pointer group">
+                            <div class="relative">
+                                <input type="checkbox" id="attended-check" class="sr-only peer"
+                                    onchange="toggleFormFields()">
+                                <div
+                                    class="w-10 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gym-success">
+                                </div>
+                            </div>
+                            <span class="text-white font-medium group-hover:text-gray-200 transition">I went to the
+                                gym</span>
+                        </label>
+                    </div>
+
+                    <!-- Yes Section -->
+                    <div id="yes-section" class="hidden">
+                        <label class="block text-gray-400 text-sm mb-2">What did you do?</label>
+                        <textarea id="workout-details" rows="4"
+                            class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-gym-success focus:ring-1 focus:ring-gym-success outline-none transition resize-none"
+                            placeholder="e.g. Chest & Triceps, 5km run..."></textarea>
+                    </div>
+
+                    <!-- No Section -->
+                    <div id="no-section" class="hidden">
+                        <label class="block text-gray-400 text-sm mb-2">Reason for skipping?</label>
+                        <textarea id="skip-reason" rows="4"
+                            class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-gym-danger focus:ring-1 focus:ring-gym-danger outline-none transition resize-none"
+                            placeholder="e.g. Rest day, Sick, Busy..."></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-gray-800 px-6 py-4 flex justify-end gap-3 border-t border-gray-700">
+                <button onclick="closeModal()"
+                    class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition">Cancel</button>
+                <button onclick="saveEntry()"
+                    class="px-4 py-2 bg-gym-accent hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/20 transition">Save
+                    Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // Change these to whatever you want
+        const CONFIG = {
+            username: "gymbro",
+            password: "gains123",
+            storageKey: "gymTrackerData_v1"
+        };
+
+        // --- STATE ---
+        let currentDate = new Date();
+        let gymData = {}; // Format: { "YYYY-MM-DD": { attended: boolean, text: string } }
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+
+            // Check session login (reset on browser close) OR persistent login (remember me)
+            if (sessionStorage.getItem('isLoggedIn') === 'true' || localStorage.getItem('isLoggedIn') === 'true') {
+                showApp();
+            }
+
+            // Render initial calendar
+            renderCalendar();
+
+            // Login Form Listener
+            document.getElementById('login-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const user = document.getElementById('username').value;
+                const pass = document.getElementById('password').value;
+                const rememberMe = document.getElementById('remember-me').checked;
+
+                if (user === CONFIG.username && pass === CONFIG.password) {
+                    if (rememberMe) {
+                        localStorage.setItem('isLoggedIn', 'true');
+                    } else {
+                        sessionStorage.setItem('isLoggedIn', 'true');
+                    }
+                    showApp();
+                } else {
+                    const err = document.getElementById('login-error');
+                    err.classList.remove('hidden');
+                    // Shake animation effect
+                    const box = document.querySelector('.bg-gym-card');
+                    box.animate([
+                        { transform: 'translateX(0)' },
+                        { transform: 'translateX(-10px)' },
+                        { transform: 'translateX(10px)' },
+                        { transform: 'translateX(0)' }
+                    ], { duration: 300 });
+                }
+            });
+        });
+
+        // --- NAVIGATION ---
+        function showApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('app-screen').classList.add('flex');
+            updateStats();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('isLoggedIn');
+            location.reload();
+        }
+
+        // --- CALENDAR LOGIC ---
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+            updateStats();
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // Update Header
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            document.getElementById('current-month-year').innerText = `${monthNames[month]} ${year}`;
+
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = "";
+
+            // Get first day of month (0 = Sun, 1 = Mon...)
+            const firstDay = new Date(year, month, 1).getDay();
+            // Get total days in month
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Padding for empty cells before first day
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "h-24 sm:h-32 bg-transparent"; // Invisible
+                grid.appendChild(emptyCell);
+            }
+
+            // Days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const entry = gymData[dateKey];
+
+                const cell = document.createElement('div');
+                cell.className = `h-24 sm:h-32 bg-gray-800 rounded-lg border border-gray-700 p-2 relative cursor-pointer hover:border-gray-500 transition group overflow-hidden flex flex-col`;
+                cell.onclick = () => openModal(dateKey);
+
+                // Date Number
+                const dayNum = document.createElement('span');
+                dayNum.className = `text-sm font-bold ${isToday(year, month, day) ? 'bg-gym-accent text-white w-6 h-6 rounded-full flex items-center justify-center' : 'text-gray-400'}`;
+                dayNum.innerText = day;
+
+                cell.appendChild(dayNum);
+
+                // Entry Content
+                if (entry) {
+                    const statusIcon = document.createElement('div');
+                    statusIcon.className = `mt-2 text-2xl flex justify-center items-center flex-1 ${entry.attended ? 'text-gym-success' : 'text-gym-danger'}`;
+                    statusIcon.innerHTML = entry.attended
+                        ? '<i class="fa-solid fa-check-circle"></i>'
+                        : '<i class="fa-solid fa-times-circle"></i>';
+
+                    cell.appendChild(statusIcon);
+
+                    // Hover Tooltip/Text
+                    const note = document.createElement('div');
+                    note.className = "text-[10px] sm:text-xs text-gray-400 mt-1 truncate px-1 text-center";
+                    note.innerText = entry.text || (entry.attended ? "Workout" : "Skipped");
+                    cell.appendChild(note);
+
+                    // Border color override
+                    cell.classList.add(entry.attended ? 'border-l-4' : 'border-l-4');
+                    cell.style.borderLeftColor = entry.attended ? '#22c55e' : '#ef4444';
+                } else {
+                    // Empty state visual
+                    const addIcon = document.createElement('div');
+                    addIcon.className = "absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-20 transition text-4xl text-white";
+                    addIcon.innerHTML = '<i class="fa-solid fa-plus"></i>';
+                    cell.appendChild(addIcon);
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function isToday(y, m, d) {
+            const today = new Date();
+            return today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
+        }
+
+        // --- DATA & MODAL LOGIC ---
+        function openModal(dateKey) {
+            document.getElementById('selected-date').value = dateKey;
+
+            // Format date for display
+            const dateObj = new Date(dateKey + 'T00:00:00'); // T00 fix timezone
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('modal-date-title').innerText = dateObj.toLocaleDateString('en-US', options);
+
+            const entry = gymData[dateKey];
+
+            // Reset Form
+            const checkbox = document.getElementById('attended-check');
+            const workoutInput = document.getElementById('workout-details');
+            const skipInput = document.getElementById('skip-reason');
+
+            if (entry) {
+                checkbox.checked = entry.attended;
+                if (entry.attended) {
+                    workoutInput.value = entry.text;
+                    skipInput.value = "";
+                } else {
+                    skipInput.value = entry.text;
+                    workoutInput.value = "";
+                }
+            } else {
+                checkbox.checked = false;
+                workoutInput.value = "";
+                skipInput.value = "";
+            }
+
+            toggleFormFields();
+            document.getElementById('entry-modal').classList.remove('hidden');
+        }
+
+        function toggleFormFields() {
+            const isAttended = document.getElementById('attended-check').checked;
+            const yesSection = document.getElementById('yes-section');
+            const noSection = document.getElementById('no-section');
+
+            if (isAttended) {
+                yesSection.classList.remove('hidden');
+                noSection.classList.add('hidden');
+                // Auto focus
+                setTimeout(() => document.getElementById('workout-details').focus(), 100);
+            } else {
+                yesSection.classList.add('hidden');
+                noSection.classList.remove('hidden');
+                // Auto focus
+                setTimeout(() => document.getElementById('skip-reason').focus(), 100);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('entry-modal').classList.add('hidden');
+        }
+
+        function saveEntry() {
+            const dateKey = document.getElementById('selected-date').value;
+            const attended = document.getElementById('attended-check').checked;
+            const text = attended
+                ? document.getElementById('workout-details').value
+                : document.getElementById('skip-reason').value;
+
+            // Save to object
+            gymData[dateKey] = {
+                attended: attended,
+                text: text
+            };
+
+            // Persist
+            saveDataLocally();
+
+            // Refresh UI
+            renderCalendar();
+            closeModal();
+            updateStats();
+        }
+
+        function updateStats() {
+            // Count based on current month view
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth() + 1; // 1-12
+            const monthPrefix = `${year}-${String(month).padStart(2, '0')}`;
+
+            let attended = 0;
+            let skipped = 0;
+
+            Object.keys(gymData).forEach(key => {
+                if (key.startsWith(monthPrefix)) {
+                    if (gymData[key].attended) attended++;
+                    else skipped++;
+                }
+            });
+
+            document.getElementById('attended-count').innerText = attended;
+            document.getElementById('skipped-count').innerText = skipped;
+        }
+
+        // --- STORAGE ---
+        function saveDataLocally() {
+            localStorage.setItem(CONFIG.storageKey, JSON.stringify(gymData));
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem(CONFIG.storageKey);
+            if (stored) {
+                try {
+                    gymData = JSON.parse(stored);
+                } catch (e) {
+                    console.error("Data corruption");
+                    gymData = {};
+                }
+            }
+        }
+
+        // --- EXPORT / IMPORT ---
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(gymData));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "gym_tracker_backup.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const contents = JSON.parse(e.target.result);
+                    // Basic validation
+                    if (typeof contents === 'object') {
+                        if (confirm("This will overwrite your current data. Are you sure?")) {
+                            gymData = contents;
+                            saveDataLocally();
+                            renderCalendar();
+                            updateStats();
+                            alert("Data restored successfully!");
+                        }
+                    }
+                } catch (err) {
+                    alert("Invalid file format");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Close modal on outside click
+        document.getElementById('entry-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'entry-modal') closeModal();
+        });
+
+    </script>
+</body>
+
+</html>
