@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
+    
     <script>
         tailwind.config = {
             theme: {
@@ -23,7 +22,7 @@
                         gym: {
                             dark: '#1a1a1a',
                             card: '#252525',
-                            accent: '#3b82f6',
+                            accent: '#3b82f6', 
                             success: '#22c55e',
                             danger: '#ef4444'
                         }
@@ -37,44 +36,52 @@
             background-color: #121212;
             color: #e5e5e5;
         }
-
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
-
         ::-webkit-scrollbar-track {
             background: #1a1a1a;
         }
-
         ::-webkit-scrollbar-thumb {
             background: #333;
             border-radius: 4px;
         }
-
         ::-webkit-scrollbar-thumb:hover {
             background: #444;
         }
-
         .fade-in {
             animation: fadeIn 0.3s ease-in-out;
         }
-
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Loading Overlay */
+        #loading-overlay {
+            backdrop-filter: blur(5px);
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-
 <body class="min-h-screen flex flex-col font-sans">
+
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/60 hidden">
+        <div class="spinner mb-4"></div>
+        <div id="loading-text" class="text-white font-semibold">Loading data...</div>
+    </div>
 
     <!-- LOGIN SCREEN -->
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-gym-dark fade-in">
@@ -84,32 +91,24 @@
                 <h1 class="text-2xl font-bold text-white">GymTracker Login</h1>
                 <p class="text-gray-400 text-sm mt-2">Track your daily gains</p>
             </div>
-
+            
             <form id="login-form" class="space-y-4">
                 <div>
                     <label class="block text-gray-400 text-sm mb-1">Username</label>
-                    <input type="text" id="username"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gym-accent transition"
-                        placeholder="Enter username">
+                    <input type="text" id="username" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gym-accent transition" placeholder="Enter username">
                 </div>
                 <div>
                     <label class="block text-gray-400 text-sm mb-1">Password</label>
-                    <input type="password" id="password"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gym-accent transition"
-                        placeholder="Enter password">
+                    <input type="password" id="password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gym-accent transition" placeholder="Enter password">
                 </div>
-
+                
                 <div class="flex items-center">
-                    <input id="remember-me" type="checkbox"
-                        class="w-4 h-4 rounded bg-gray-800 border-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900">
-                    <label for="remember-me"
-                        class="ml-2 text-sm font-medium text-gray-400 cursor-pointer select-none">Keep me logged
-                        in</label>
+                    <input id="remember-me" type="checkbox" class="w-4 h-4 rounded bg-gray-800 border-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900">
+                    <label for="remember-me" class="ml-2 text-sm font-medium text-gray-400 cursor-pointer select-none">Keep me logged in</label>
                 </div>
 
                 <div id="login-error" class="text-red-500 text-sm hidden text-center">Invalid credentials</div>
-                <button type="submit"
-                    class="w-full bg-gym-accent hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 transform hover:scale-[1.02]">
+                <button type="submit" class="w-full bg-gym-accent hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 transform hover:scale-[1.02]">
                     Login
                 </button>
             </form>
@@ -121,7 +120,7 @@
 
     <!-- MAIN APP SCREEN (Hidden by default) -->
     <div id="app-screen" class="hidden flex-1 flex flex-col max-w-5xl mx-auto w-full p-4 fade-in">
-
+        
         <!-- Header -->
         <header class="flex justify-between items-center mb-6 py-4 border-b border-gray-800">
             <div class="flex items-center gap-3">
@@ -129,19 +128,19 @@
                 <h1 class="text-xl font-bold text-white">GymTracker</h1>
             </div>
             <div class="flex gap-3">
-                <button onclick="exportData()"
-                    class="text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg transition"
-                    title="Backup Data">
+                 <!-- Data status indicator -->
+                 <div id="connection-status" class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-gray-800 border border-gray-700">
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span class="text-xs text-gray-400">Cloud Sync Active</span>
+                </div>
+                <button onclick="exportData()" class="text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg transition" title="Backup Data">
                     <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Backup</span>
                 </button>
                 <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(this)">
-                <button onclick="document.getElementById('import-file').click()"
-                    class="text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg transition"
-                    title="Restore Data">
+                <button onclick="document.getElementById('import-file').click()" class="text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg transition" title="Restore Data">
                     <i class="fa-solid fa-upload"></i> <span class="hidden sm:inline">Restore</span>
                 </button>
-                <button onclick="logout()"
-                    class="text-sm bg-red-500/10 hover:bg-red-500/20 text-red-500 px-3 py-2 rounded-lg transition">
+                <button onclick="logout()" class="text-sm bg-red-500/10 hover:bg-red-500/20 text-red-500 px-3 py-2 rounded-lg transition">
                     <i class="fa-solid fa-sign-out-alt"></i>
                 </button>
             </div>
@@ -149,13 +148,11 @@
 
         <!-- Calendar Controls -->
         <div class="flex justify-between items-center mb-6">
-            <button onclick="changeMonth(-1)"
-                class="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition">
+            <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition">
                 <i class="fa-solid fa-chevron-left text-xl"></i>
             </button>
             <h2 id="current-month-year" class="text-2xl font-bold text-white"></h2>
-            <button onclick="changeMonth(1)"
-                class="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition">
+            <button onclick="changeMonth(1)" class="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition">
                 <i class="fa-solid fa-chevron-right text-xl"></i>
             </button>
         </div>
@@ -192,8 +189,7 @@
     </div>
 
     <!-- ENTRY MODAL -->
-    <div id="entry-modal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden fade-in">
+    <div id="entry-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden fade-in">
         <div class="bg-gym-card w-full max-w-lg mx-4 rounded-xl shadow-2xl border border-gray-700 overflow-hidden">
             <div class="bg-gray-800 px-6 py-4 flex justify-between items-center border-b border-gray-700">
                 <h3 id="modal-date-title" class="text-lg font-bold text-white">Edit Date</h3>
@@ -201,61 +197,51 @@
                     <i class="fa-solid fa-times"></i>
                 </button>
             </div>
-
+            
             <div class="p-6">
                 <form id="entry-form">
                     <input type="hidden" id="selected-date">
-
+                    
                     <!-- Checkbox -->
                     <div class="mb-6">
                         <label class="flex items-center space-x-3 cursor-pointer group">
                             <div class="relative">
-                                <input type="checkbox" id="attended-check" class="sr-only peer"
-                                    onchange="toggleFormFields()">
-                                <div
-                                    class="w-10 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gym-success">
-                                </div>
+                                <input type="checkbox" id="attended-check" class="sr-only peer" onchange="toggleFormFields()">
+                                <div class="w-10 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gym-success"></div>
                             </div>
-                            <span class="text-white font-medium group-hover:text-gray-200 transition">I went to the
-                                gym</span>
+                            <span class="text-white font-medium group-hover:text-gray-200 transition">I went to the gym</span>
                         </label>
                     </div>
 
                     <!-- Yes Section -->
                     <div id="yes-section" class="hidden">
                         <label class="block text-gray-400 text-sm mb-2">What did you do?</label>
-                        <textarea id="workout-details" rows="4"
-                            class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-gym-success focus:ring-1 focus:ring-gym-success outline-none transition resize-none"
-                            placeholder="e.g. Chest & Triceps, 5km run..."></textarea>
+                        <textarea id="workout-details" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-gym-success focus:ring-1 focus:ring-gym-success outline-none transition resize-none" placeholder="e.g. Chest & Triceps, 5km run..."></textarea>
                     </div>
 
                     <!-- No Section -->
                     <div id="no-section" class="hidden">
                         <label class="block text-gray-400 text-sm mb-2">Reason for skipping?</label>
-                        <textarea id="skip-reason" rows="4"
-                            class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-gym-danger focus:ring-1 focus:ring-gym-danger outline-none transition resize-none"
-                            placeholder="e.g. Rest day, Sick, Busy..."></textarea>
+                        <textarea id="skip-reason" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-gym-danger focus:ring-1 focus:ring-gym-danger outline-none transition resize-none" placeholder="e.g. Rest day, Sick, Busy..."></textarea>
                     </div>
                 </form>
             </div>
 
             <div class="bg-gray-800 px-6 py-4 flex justify-end gap-3 border-t border-gray-700">
-                <button onclick="closeModal()"
-                    class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition">Cancel</button>
-                <button onclick="saveEntry()"
-                    class="px-4 py-2 bg-gym-accent hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/20 transition">Save
-                    Entry</button>
+                <button onclick="closeModal()" class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition">Cancel</button>
+                <button onclick="saveEntry()" class="px-4 py-2 bg-gym-accent hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/20 transition">Save Entry</button>
             </div>
         </div>
     </div>
 
     <script>
         // --- CONFIGURATION ---
-        // Change these to whatever you want
+        // I have added your URL here
         const CONFIG = {
             username: "gymbro",
             password: "gains123",
-            storageKey: "gymTrackerData_v1"
+            storageKey: "gymTrackerData_v1",
+            scriptUrl: "https://script.google.com/macros/s/AKfycbwcz7iSFD7mxqJq7b9cmuSjs-CPH4U9ITJ9lqRRX7XF0fA2Zyl6_5ieEzkioTWl4xlmwg/exec"
         };
 
         // --- STATE ---
@@ -264,8 +250,7 @@
 
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
-            loadData();
-
+            
             // Check session login (reset on browser close) OR persistent login (remember me)
             if (sessionStorage.getItem('isLoggedIn') === 'true' || localStorage.getItem('isLoggedIn') === 'true') {
                 showApp();
@@ -308,13 +293,26 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
             document.getElementById('app-screen').classList.add('flex');
-            updateStats();
+            
+            // Load Data from Cloud immediately
+            loadDataFromCloud();
         }
 
         function logout() {
             sessionStorage.removeItem('isLoggedIn');
             localStorage.removeItem('isLoggedIn');
             location.reload();
+        }
+
+        function showLoading(msg) {
+            const overlay = document.getElementById('loading-overlay');
+            const text = document.getElementById('loading-text');
+            text.innerText = msg;
+            overlay.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
         }
 
         // --- CALENDAR LOGIC ---
@@ -327,7 +325,7 @@
         function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
-
+            
             // Update Header
             const monthNames = ["January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"
@@ -353,7 +351,7 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const entry = gymData[dateKey];
-
+                
                 const cell = document.createElement('div');
                 cell.className = `h-24 sm:h-32 bg-gray-800 rounded-lg border border-gray-700 p-2 relative cursor-pointer hover:border-gray-500 transition group overflow-hidden flex flex-col`;
                 cell.onclick = () => openModal(dateKey);
@@ -362,28 +360,31 @@
                 const dayNum = document.createElement('span');
                 dayNum.className = `text-sm font-bold ${isToday(year, month, day) ? 'bg-gym-accent text-white w-6 h-6 rounded-full flex items-center justify-center' : 'text-gray-400'}`;
                 dayNum.innerText = day;
-
+                
                 cell.appendChild(dayNum);
 
                 // Entry Content
                 if (entry) {
-                    const statusIcon = document.createElement('div');
-                    statusIcon.className = `mt-2 text-2xl flex justify-center items-center flex-1 ${entry.attended ? 'text-gym-success' : 'text-gym-danger'}`;
-                    statusIcon.innerHTML = entry.attended
-                        ? '<i class="fa-solid fa-check-circle"></i>'
-                        : '<i class="fa-solid fa-times-circle"></i>';
+                    // Normalize boolean/string value
+                    const isAttended = entry.attended === true || String(entry.attended).toLowerCase() === 'true';
 
+                    const statusIcon = document.createElement('div');
+                    statusIcon.className = `mt-2 text-2xl flex justify-center items-center flex-1 ${isAttended ? 'text-gym-success' : 'text-gym-danger'}`;
+                    statusIcon.innerHTML = isAttended 
+                        ? '<i class="fa-solid fa-check-circle"></i>' 
+                        : '<i class="fa-solid fa-times-circle"></i>';
+                    
                     cell.appendChild(statusIcon);
 
                     // Hover Tooltip/Text
                     const note = document.createElement('div');
                     note.className = "text-[10px] sm:text-xs text-gray-400 mt-1 truncate px-1 text-center";
-                    note.innerText = entry.text || (entry.attended ? "Workout" : "Skipped");
+                    note.innerText = entry.text || (isAttended ? "Workout" : "Skipped");
                     cell.appendChild(note);
-
+                    
                     // Border color override
-                    cell.classList.add(entry.attended ? 'border-l-4' : 'border-l-4');
-                    cell.style.borderLeftColor = entry.attended ? '#22c55e' : '#ef4444';
+                    cell.classList.add('border-l-4');
+                    cell.style.borderLeftColor = isAttended ? '#22c55e' : '#ef4444';
                 } else {
                     // Empty state visual
                     const addIcon = document.createElement('div');
@@ -404,7 +405,7 @@
         // --- DATA & MODAL LOGIC ---
         function openModal(dateKey) {
             document.getElementById('selected-date').value = dateKey;
-
+            
             // Format date for display
             const dateObj = new Date(dateKey + 'T00:00:00'); // T00 fix timezone
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -418,8 +419,9 @@
             const skipInput = document.getElementById('skip-reason');
 
             if (entry) {
-                checkbox.checked = entry.attended;
-                if (entry.attended) {
+                const isAttended = entry.attended === true || String(entry.attended).toLowerCase() === 'true';
+                checkbox.checked = isAttended;
+                if (isAttended) {
                     workoutInput.value = entry.text;
                     skipInput.value = "";
                 } else {
@@ -461,23 +463,45 @@
         function saveEntry() {
             const dateKey = document.getElementById('selected-date').value;
             const attended = document.getElementById('attended-check').checked;
-            const text = attended
-                ? document.getElementById('workout-details').value
+            const text = attended 
+                ? document.getElementById('workout-details').value 
                 : document.getElementById('skip-reason').value;
 
-            // Save to object
+            // 1. Optimistic Update (Show instantly)
             gymData[dateKey] = {
                 attended: attended,
                 text: text
             };
 
-            // Persist
+            // Save locally just in case
             saveDataLocally();
-
+            
             // Refresh UI
             renderCalendar();
             closeModal();
             updateStats();
+
+            // 2. Cloud Sync
+            showLoading("Saving to Cloud...");
+
+            const payload = {
+                date: dateKey,
+                attended: attended,
+                details: text
+            };
+
+            fetch(CONFIG.scriptUrl, {
+                method: 'POST',
+                mode: 'no-cors', // Essential for Google Apps Script Web App
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                hideLoading();
+            }).catch(err => {
+                hideLoading();
+                alert("Saved locally, but failed to sync to cloud.");
+                console.error(err);
+            });
         }
 
         function updateStats() {
@@ -485,13 +509,16 @@
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth() + 1; // 1-12
             const monthPrefix = `${year}-${String(month).padStart(2, '0')}`;
-
+            
             let attended = 0;
             let skipped = 0;
 
             Object.keys(gymData).forEach(key => {
                 if (key.startsWith(monthPrefix)) {
-                    if (gymData[key].attended) attended++;
+                    const entry = gymData[key];
+                    const isAttended = entry.attended === true || String(entry.attended).toLowerCase() === 'true';
+
+                    if (isAttended) attended++;
                     else skipped++;
                 }
             });
@@ -505,13 +532,33 @@
             localStorage.setItem(CONFIG.storageKey, JSON.stringify(gymData));
         }
 
-        function loadData() {
+        function loadDataFromCloud() {
+            showLoading("Syncing with Google Sheets...");
+            
+            fetch(CONFIG.scriptUrl)
+                .then(response => response.json())
+                .then(data => {
+                    gymData = data;
+                    renderCalendar();
+                    updateStats();
+                    hideLoading();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    hideLoading();
+                    // Fallback to local data if cloud fails
+                    loadDataLocal();
+                });
+        }
+
+        function loadDataLocal() {
             const stored = localStorage.getItem(CONFIG.storageKey);
             if (stored) {
                 try {
                     gymData = JSON.parse(stored);
+                    renderCalendar();
+                    updateStats();
                 } catch (e) {
-                    console.error("Data corruption");
                     gymData = {};
                 }
             }
@@ -533,12 +580,11 @@
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function (e) {
+            reader.onload = function(e) {
                 try {
                     const contents = JSON.parse(e.target.result);
-                    // Basic validation
                     if (typeof contents === 'object') {
-                        if (confirm("This will overwrite your current data. Are you sure?")) {
+                        if(confirm("This will overwrite your current data. Are you sure?")) {
                             gymData = contents;
                             saveDataLocally();
                             renderCalendar();
@@ -560,5 +606,4 @@
 
     </script>
 </body>
-
 </html>
